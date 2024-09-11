@@ -11,13 +11,9 @@ class Program
         Random random = new Random();
         ArmyGenerator armyGenerator = new ArmyGenerator(random);
 
-        Soldier1 s1 = new Soldier1(random, "SS1");
-        Soldier1 s2 = new Soldier2(random, "SS2");
-        Soldier1 s3 = new Soldier3(random, "SS3");
-        Soldier1 s4 = new Soldier4(random, "SS4");
 
 
-        List<Soldier1> _soldiers = new List<Soldier1>(armyGenerator.Generate());
+        List<Soldier> _soldiers = new List<Soldier>(armyGenerator.Generate());
 
         foreach (var item in _soldiers)
             item.ShowStats();
@@ -27,28 +23,15 @@ class Program
     }
 }
 
-class Soldier1
+class Soldier
 {
     protected string Type;
     protected int Health;
     protected int Armor;
     protected int Damage;
-    private int _minHealth = 100;
-    private int _maxHealth = 150;
-    private int _minArmor = 20;
-    private int _maxArmor = 30;
-    private int _minDamage = 20;
-    private int _maxDamage = 30;
+  
 
-    public Soldier1(Random random, string type)
-    {
-        Type = type;
-        Health = random.Next(_minHealth, _maxHealth);
-        Armor = random.Next(_minArmor, _maxArmor);
-        Damage = random.Next(_minDamage, _maxDamage);
-    }
-
-    public Soldier1(string type, int health, int armor, int damage)//конструктор для метода клон
+    public Soldier(string type = "", int health = 0, int armor = 0, int damage = 0)//конструктор для метода клон
     {
         Type = type;
         Health = health;
@@ -73,20 +56,16 @@ class Soldier1
 
     public virtual int GiveDamage() => Damage;
 
-    public virtual Soldier1 Clone() => new Soldier1(Type, Health, Armor, Damage);
+    public virtual Soldier Clone() => new Soldier(Type, Health, Armor, Damage);
+
+    public  Soldier Clone(string type , int health , int armor , int damage ) => new Soldier(type, health, armor, damage);
 }
 
-class Soldier2 : Soldier1
+class Soldier2 : Soldier
 {
     private int _multiplier;
 
-    public Soldier2(Random random, string type, int multiplier = 2)
-        : base(random, type)
-    {
-        _multiplier = multiplier;
-    }
-
-    public Soldier2(string type, int health, int armor, int damage, int multiplier)//конструктор для клона
+    public Soldier2(string type = "", int health = 0, int armor = 0, int damage = 0, int multiplier = 2)//конструктор для клона
         : base(type, health, armor, damage)
     {
         Type = type;
@@ -98,22 +77,17 @@ class Soldier2 : Soldier1
 
     public override int GiveDamage() => Damage * _multiplier;
 
-    public override Soldier1 Clone() => new Soldier2(Type, Health, Armor, Damage, _multiplier);
+    public override Soldier Clone() => new Soldier2(Type, Health, Armor, Damage, _multiplier);
+
+    public  Soldier Clone(string type , int health , int armor , int damage , int multiplier ) => new Soldier2(type, health, armor, damage, multiplier);
 }
 
-class Soldier3 : Soldier1
+class Soldier3 : Soldier
 {
     private int _quantityAttacks;
-    protected bool _canRepitAttakedSoldirs;
+    protected bool _canRepitAttakedSoldirs=false;
 
-    public Soldier3(Random random, string type, int quantityAttacks = 2, bool canRepitAttacedSoldirs = false)
-        : base(random, type)
-    {
-        _quantityAttacks = quantityAttacks;
-        _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
-    }
-
-    public Soldier3(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs)//конструктор для клона
+    public Soldier3(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 2, bool canRepitAttacedSoldirs = false)//конструктор для клона
        : base(type, health, armor, damage)
     {
         Health = health;
@@ -123,22 +97,18 @@ class Soldier3 : Soldier1
         _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
     }
 
-    public override Soldier1 Clone() => new Soldier3(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+    public override Soldier Clone() => new Soldier3(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+
+    public Soldier Clone(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs) => new Soldier3(type, health, armor, damage, quantityAttacks, canRepitAttacedSoldirs);
+
 }
 
-class Soldier4 : Soldier1
+class Soldier4 : Soldier
 {
     private int _quantityAttacks;
     protected bool _canRepitAttakedSoldirs;
 
-    public Soldier4(Random random, string type, int quantityAttacks = 2, bool canRepitAttacedSoldirs = true)
-        : base(random, type)
-    {
-        _quantityAttacks = quantityAttacks;
-        _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
-    }
-
-    public Soldier4(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs)//конструктор для клона
+    public Soldier4(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 0, bool canRepitAttacedSoldirs = false)//конструктор для клона
        : base(type, health, armor, damage)
     {
         Health = health;
@@ -148,13 +118,16 @@ class Soldier4 : Soldier1
         _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
     }
 
-    public override Soldier1 Clone() => new Soldier4(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+    public override Soldier Clone() => new Soldier4(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+
+    public Soldier Clone(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs) => new Soldier3(type, health, armor, damage, quantityAttacks, canRepitAttacedSoldirs);
+
 }
 
 
 class ArmyGenerator
 {
-    private List<Soldier1> _soldiersType;
+    private List<Soldier> _soldiersType;
     private int _minQuantityOfSoldiers = 10;
     private int _maxQuantityOfSoldiers = 15;
     private Random _random;
@@ -168,45 +141,51 @@ class ArmyGenerator
 
     public ArmyGenerator(Random random)
     {
-        _soldiersType = new List<Soldier1>() { new Soldier1(random,"Type1"),
-                                               new Soldier2(random,"Type2"),
-                                               new Soldier3(random,"Type3"),
-                                               new Soldier4(random,"Type4") };
+        _soldiersType = new List<Soldier>() { new Soldier("Type1"),
+                                               new Soldier2("Type2"),
+                                               new Soldier3("Type3"),
+                                               new Soldier4("Type4") };
         _random = random;
-
     }
+ 
 
-    private void GenerateSoldier()
+    public List<Soldier> Generate()
     {
-        int Health = _random.Next(_minHealth, _maxHealth);
-        int Armor = _random.Next(_minArmor, _maxArmor);
-        int Damage = _random.Next(_minDamage, _maxDamage);
-
-
-    }
-
-
-
-
-
-    public List<Soldier1> Generate()
-    {
-        List<Soldier1> soldiers = new List<Soldier1>();
+        List<Soldier> soldiers = new List<Soldier>();
         int _quantityOfSoldiers = _random.Next(_minQuantityOfSoldiers, _maxQuantityOfSoldiers);
 
         for (int i = 0; i < _quantityOfSoldiers; i++)
-            soldiers.Add(_soldiersType[_random.Next(0, _soldiersType.Count)].Clone());
+        {
+            int soldierType = _random.Next(0, _soldiersType.Count);
+            int health = _random.Next(_minHealth, _maxHealth);
+            int armor = _random.Next(_minArmor, _maxArmor);
+            int damage = _random.Next(_minDamage, _maxDamage);
 
+            var s = _soldiersType[soldierType];
+
+            Soldier sold = new Soldier ();
+
+
+            soldiers.Add(_soldiersType[soldierType].Clone());
+
+
+
+
+        }
         return soldiers;
     }
 }
 
+interface IClonable
+{
+
+}
 
 
 
 class Army
 {
-    private List<Soldier1> _soldiers;
+    private List<Soldier> _soldiers;
     private int _minQuantityOfSoldiers = 100;
     private int _maxQuantityOfSoldiers = 150;
     public string Name { get; private set; }
@@ -215,7 +194,7 @@ class Army
     {
 
 
-        _soldiers = new List<Soldier1>();
+        _soldiers = new List<Soldier>();
 
     }
 
