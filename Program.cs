@@ -11,8 +11,6 @@ class Program
         Random random = new Random();
         ArmyGenerator armyGenerator = new ArmyGenerator(random);
 
-
-
         List<Soldier> _soldiers = new List<Soldier>(armyGenerator.Generate());
 
         foreach (var item in _soldiers)
@@ -29,9 +27,9 @@ class Soldier
     protected int Health;
     protected int Armor;
     protected int Damage;
-  
 
-    public Soldier(string type = "", int health = 0, int armor = 0, int damage = 0)//конструктор для метода клон
+
+    public Soldier(string type = "", int health = 0, int armor = 0, int damage = 0)
     {
         Type = type;
         Health = health;
@@ -56,16 +54,14 @@ class Soldier
 
     public virtual int GiveDamage() => Damage;
 
-    public virtual Soldier Clone() => new Soldier(Type, Health, Armor, Damage);
-
-    public  Soldier Clone(string type , int health , int armor , int damage ) => new Soldier(type, health, armor, damage);
+    public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(Type, health, armor, damage);
 }
 
 class Soldier2 : Soldier
 {
     private int _multiplier;
 
-    public Soldier2(string type = "", int health = 0, int armor = 0, int damage = 0, int multiplier = 2)//конструктор для клона
+    public Soldier2(string type = "", int health = 0, int armor = 0, int damage = 0, int multiplier = 2)
         : base(type, health, armor, damage)
     {
         Type = type;
@@ -77,50 +73,48 @@ class Soldier2 : Soldier
 
     public override int GiveDamage() => Damage * _multiplier;
 
-    public override Soldier Clone() => new Soldier2(Type, Health, Armor, Damage, _multiplier);
+    //  public override Soldier Clone() => new Soldier2(Type, Health, Armor, Damage, _multiplier);
 
-    public  Soldier Clone(string type , int health , int armor , int damage , int multiplier ) => new Soldier2(type, health, armor, damage, multiplier);
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier2(Type, health, armor, damage, _multiplier);
 }
 
 class Soldier3 : Soldier
 {
     private int _quantityAttacks;
-    protected bool _canRepitAttakedSoldirs=false;
+    protected bool _canRepitAttakedSoldirs = false;
 
-    public Soldier3(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 2, bool canRepitAttacedSoldirs = false)//конструктор для клона
+    public Soldier3(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 2)//конструктор для клона
        : base(type, health, armor, damage)
     {
         Health = health;
         Armor = armor;
         Damage = damage;
         _quantityAttacks = quantityAttacks;
-        _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
     }
 
-    public override Soldier Clone() => new Soldier3(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+    //  public override Soldier Clone() => new Soldier3(Type, Health, Armor, Damage, _quantityAttacks);
 
-    public Soldier Clone(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs) => new Soldier3(type, health, armor, damage, quantityAttacks, canRepitAttacedSoldirs);
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier3(Type, health, armor, damage, _quantityAttacks);
 
 }
 
 class Soldier4 : Soldier
 {
     private int _quantityAttacks;
-    protected bool _canRepitAttakedSoldirs;
+    protected bool _canRepitAttakedSoldirs = true;
 
-    public Soldier4(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 0, bool canRepitAttacedSoldirs = false)//конструктор для клона
+    public Soldier4(string type = "", int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 3)//конструктор для клона
        : base(type, health, armor, damage)
     {
         Health = health;
         Armor = armor;
         Damage = damage;
         _quantityAttacks = quantityAttacks;
-        _canRepitAttakedSoldirs = canRepitAttacedSoldirs;
     }
 
-    public override Soldier Clone() => new Soldier4(Type, Health, Armor, Damage, _quantityAttacks, _canRepitAttakedSoldirs);
+    //  public override Soldier Clone() => new Soldier4(Type, Health, Armor, Damage, _quantityAttacks);
 
-    public Soldier Clone(string type, int health, int armor, int damage, int quantityAttacks, bool canRepitAttacedSoldirs) => new Soldier3(type, health, armor, damage, quantityAttacks, canRepitAttacedSoldirs);
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier4(Type, health, armor, damage, _quantityAttacks);
 
 }
 
@@ -147,7 +141,7 @@ class ArmyGenerator
                                                new Soldier4("Type4") };
         _random = random;
     }
- 
+
 
     public List<Soldier> Generate()
     {
@@ -161,17 +155,9 @@ class ArmyGenerator
             int armor = _random.Next(_minArmor, _maxArmor);
             int damage = _random.Next(_minDamage, _maxDamage);
 
-            var s = _soldiersType[soldierType];
-
-            Soldier sold = new Soldier ();
-
-
-            soldiers.Add(_soldiersType[soldierType].Clone());
-
-
-
-
+            soldiers.Add(_soldiersType[soldierType].Clone(health, armor, damage));
         }
+
         return soldiers;
     }
 }
