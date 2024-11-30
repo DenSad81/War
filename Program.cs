@@ -11,13 +11,18 @@ class Program
         Random random = new Random();
         ArmyGenerator armyGenerator = new ArmyGenerator(random);
 
-        List<Soldier> _soldiers = new List<Soldier>(armyGenerator.Generate());
+        List<Soldier> soldiers1 = new List<Soldier>(armyGenerator.Generate());
+        List<Soldier> soldiers2 = new List<Soldier>(armyGenerator.Generate());
 
-        foreach (var item in _soldiers)
-            item.ShowStats();
+        Army a1 = new Army(soldiers1, "Orks");
+        Army a2 = new Army(soldiers2, "Gnoms");
+
+        a1.ShowAll();
+        Console.WriteLine();
+        Console.WriteLine();
+        a2.ShowAll();
 
         Console.ReadKey();
-
     }
 }
 
@@ -27,7 +32,8 @@ class Soldier
     protected int Health;
     protected int Armor;
     protected int Damage;
-
+    protected int QuantityAttacks;
+    protected bool CanRepitAttakedSoldirs;
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
     {
@@ -35,6 +41,8 @@ class Soldier
         Health = health;
         Armor = armor;
         Damage = damage;
+        QuantityAttacks = 1;
+        CanRepitAttakedSoldirs = false;
     }
 
     public void ShowStats()
@@ -61,66 +69,59 @@ class Soldier2 : Soldier
 {
     private int _multiplier;
 
-    public Soldier2(int health = 0, int armor = 0, int damage = 0, int multiplier = 2)
+    public Soldier2(int health = 0, int armor = 0, int damage = 0)
         : base(health, armor, damage)
     {
         Type = "T2";
-        Health = health;
-        Armor = armor;
-        Damage = damage;
-        _multiplier = multiplier;
+        // Health = health;
+        // Armor = armor;
+        // Damage = damage;
+        _multiplier = 2;
     }
 
     public override int GiveDamage() => Damage * _multiplier;
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier2(health, armor, damage, _multiplier);
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier2(health, armor, damage);
 }
 
 class Soldier3 : Soldier
 {
-    private int _quantityAttacks;
-    protected bool _canRepitAttakedSoldirs = false;
-
-    public Soldier3(int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 2)
+    public Soldier3(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
     {
         Type = "T3";
-        Health = health;
-        Armor = armor;
-        Damage = damage;
-        _quantityAttacks = quantityAttacks;
+        //Health = health;
+        //Armor = armor;
+        //Damage = damage;
+        QuantityAttacks = 2;
+        CanRepitAttakedSoldirs = false;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier3(health, armor, damage, _quantityAttacks);
-
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier3(health, armor, damage);
 }
 
 class Soldier4 : Soldier
 {
-    private int _quantityAttacks;
-    protected bool _canRepitAttakedSoldirs = true;
-
-    public Soldier4(int health = 0, int armor = 0, int damage = 0, int quantityAttacks = 3)
+    public Soldier4(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
     {
         Type = "T4";
-        Health = health;
-        Armor = armor;
-        Damage = damage;
-        _quantityAttacks = quantityAttacks;
+        //Health = health;
+        //Armor = armor;
+        //Damage = damage;
+        QuantityAttacks = 3;
+        CanRepitAttakedSoldirs = true;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier4(health, armor, damage, _quantityAttacks);
-
+    public override Soldier Clone(int health, int armor, int damage) => new Soldier4(health, armor, damage);
 }
-
 
 class ArmyGenerator
 {
     private List<Soldier> _soldiersType;
     private Random _random;
-    private int _minQuantitySoldiers = 10;
-    private int _maxQuantitySoldiers = 15;
+    private int _minSoldiers = 10;
+    private int _maxSoldiers = 15;
     private int _minHealth = 100;
     private int _maxHealth = 150;
     private int _minArmor = 20;
@@ -137,13 +138,11 @@ class ArmyGenerator
         _random = random;
     }
 
-
     public List<Soldier> Generate()
     {
         List<Soldier> soldiers = new List<Soldier>();
-        int _quantitySoldiers = _random.Next(_minQuantitySoldiers, _maxQuantitySoldiers);
 
-        for (int i = 0; i < _quantitySoldiers; i++)
+        for (int i = 0; i < _random.Next(_minSoldiers, _maxSoldiers); i++)
         {
             int soldierType = _random.Next(0, _soldiersType.Count);
             int health = _random.Next(_minHealth, _maxHealth);
@@ -157,26 +156,17 @@ class ArmyGenerator
     }
 }
 
-interface IClonable
-{
-
-}
-
-
 
 class Army
 {
     private List<Soldier> _soldiers;
-    private int _minQuantityOfSoldiers = 100;
-    private int _maxQuantityOfSoldiers = 150;
+
     public string Name { get; private set; }
 
-    public Army(Random random)
+    public Army(List<Soldier> soldiers, string name)
     {
-
-
-        _soldiers = new List<Soldier>();
-
+        _soldiers = new List<Soldier>(soldiers);
+        Name = name;
     }
 
     public void ShowAll()
@@ -187,21 +177,14 @@ class Army
 
     public void DeleteDeadBodys()
     {
-        int quantityOfRepit = 0;
-
-        while (quantityOfRepit < _soldiers.Count)
+        foreach (var soldier in _soldiers)
         {
-            if (_soldiers[quantityOfRepit].IsAlife() == true)
-                quantityOfRepit++;
-            else
-                _soldiers.RemoveAt(quantityOfRepit);
+            if (soldier.IsAlife() == false)
+                _soldiers.Remove(soldier);
         }
     }
 
-    public int GetQuantityOfSoldiers()
-    {
-        return _soldiers.Count;
-    }
+    public int GetQuantityOfSoldiers() => _soldiers.Count;
 
     public void TakeDamage(Army enemy, int lenght, bool isAttack)
     {
