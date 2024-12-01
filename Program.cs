@@ -10,39 +10,32 @@ class Program
     {
         Random random = new Random();
         ArmyGenerator armyGenerator = new ArmyGenerator(random);
-
         List<Soldier> soldiers1 = new List<Soldier>(armyGenerator.Generate());
         List<Soldier> soldiers2 = new List<Soldier>(armyGenerator.Generate());
-
         Army a1 = new Army(soldiers1, "Orks", random);
         Army a2 = new Army(soldiers2, "Gnoms", random);
+        Fight fight = new Fight();
 
         a1.ShowAllSoldiers();
         Console.WriteLine();
-        Console.WriteLine();
         a2.ShowAllSoldiers();
 
-        Console.ReadKey();
-
-        Fight fight = new Fight();
+        Console.WriteLine();
         fight.GoFight(a1, a2);
         fight.ShowWinner(a1, a2);
+        Console.WriteLine();
 
         a1.ShowAllSoldiers();
         Console.WriteLine();
-        Console.WriteLine();
         a2.ShowAllSoldiers();
-
     }
 }
 
 class Soldier
 {
-    protected string Type;
     protected int Health;
     protected int Armor;
     protected int Damage;
-    protected int QuantityAttacks;
     protected bool CanRepitAttakedSoldirs;
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
@@ -55,7 +48,10 @@ class Soldier
         CanRepitAttakedSoldirs = false;
     }
 
-    public void ShowStats() => Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage}");
+    public int QuantityAttacks { get; protected set; }
+    public string Type { get; protected set; }
+
+    public void ShowStats() => Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage} armor: {Armor}");
 
     public bool IsAlife() => (Health > 0);
 
@@ -117,9 +113,9 @@ class ArmyGenerator
     private int _minHealth = 100;
     private int _maxHealth = 150;
     private int _minArmor = 20;
-    private int _maxArmor = 30;
-    private int _minDamage = 20;
-    private int _maxDamage = 30;
+    private int _maxArmor = 25;
+    private int _minDamage = 30;
+    private int _maxDamage = 35;
 
     public ArmyGenerator(Random random)
     {
@@ -151,40 +147,57 @@ class ArmyGenerator
 
 class Army
 {
-    public List<Soldier> Soldiers;
-
+    private List<Soldier> _soldiers;
     private Random _random;
-
-    public string Name { get; private set; }
 
     public Army(List<Soldier> soldiers, string name, Random random)
     {
-        Soldiers = new List<Soldier>(soldiers);
+        _soldiers = new List<Soldier>(soldiers);
         Name = name;
         _random = random;
     }
 
+    public string Name { get; private set; }
+
     public void ShowAllSoldiers()
     {
-        foreach (var soldier in Soldiers)
+        foreach (var soldier in _soldiers)
+        {
+            Console.Write($"Name: {Name} ");
             soldier.ShowStats();
+        }
     }
 
     public void DeleteDeadBody()
     {
-        foreach (var soldier in Soldiers)
+        foreach (var soldier in _soldiers)
         {
             if (soldier.IsAlife() == false)
             {
-                Soldiers.Remove(soldier);
+                _soldiers.Remove(soldier);
                 break;
             }
         }
     }
 
-    public int GetQuantityOfSoldiers() => Soldiers.Count;
+    public int GetQuantityOfSoldiers() => _soldiers.Count;
 
-    public Soldier GetRandomSoldier() => Soldiers[_random.Next(0, Soldiers.Count())];
+    public bool TryGetRandomSoldier(out Soldier soldier)
+    {
+        if (_soldiers.Count() > 0)
+        {
+            soldier = _soldiers[_random.Next(0, _soldiers.Count())];
+            return true;
+        }
+        else
+        {
+            soldier = null;
+            return false;
+        }
+
+    }
+
+    public Soldier GetRandomSoldier() => _soldiers[_random.Next(0, _soldiers.Count())];
 }
 
 class Fight
@@ -193,11 +206,28 @@ class Fight
     {
         while (army1.GetQuantityOfSoldiers() > 0 & army2.GetQuantityOfSoldiers() > 0)
         {
-            army2.GetRandomSoldier().TakeDamage(army1.GetRandomSoldier().GiveDamage());
-            army2.DeleteDeadBody();
+            Soldier attackedSoldier = army1.GetRandomSoldier();
+            for (int i = 0; i < attackedSoldier.QuantityAttacks; i++)
+            {
+                army2.GetRandomSoldier().TakeDamage(attackedSoldier.GiveDamage());
+                army2.DeleteDeadBody();
 
-            army1.GetRandomSoldier().TakeDamage(army1.GetRandomSoldier().GiveDamage());
-            army1.DeleteDeadBody();
+                if (army2.GetQuantityOfSoldiers() == 0)
+                    break;
+            }
+
+            if (army2.GetQuantityOfSoldiers() == 0)
+                break;
+
+            attackedSoldier = army2.GetRandomSoldier();
+            for (int i = 0; i < attackedSoldier.QuantityAttacks; i++)
+            {
+                army1.GetRandomSoldier().TakeDamage(attackedSoldier.GiveDamage());
+                army1.DeleteDeadBody();
+
+                if (army1.GetQuantityOfSoldiers() == 0)
+                    break;
+            }
         }
     }
 
