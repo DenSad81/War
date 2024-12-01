@@ -40,7 +40,7 @@ class Soldier
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
     {
-        Type = "T1";
+        Type = "Type 1";
         Health = health;
         Armor = armor;
         Damage = damage;
@@ -73,7 +73,7 @@ class Soldier2 : Soldier
     public Soldier2(int health = 0, int armor = 0, int damage = 0)
         : base(health, armor, damage)
     {
-        Type = "T2";
+        Type = "Type 2";
         _multiplier = 2;
     }
 
@@ -89,7 +89,7 @@ class Soldier3 : Soldier
     public Soldier3(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
     {
-        Type = "T3";
+        Type = "Type 3";
         QuantityAttacks = 2;
         CanRepitAttakedSoldirs = false;
     }
@@ -103,7 +103,7 @@ class Soldier4 : Soldier
     public Soldier4(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
     {
-        Type = "T4";
+        Type = "Type 4";
         QuantityAttacks = 3;
         CanRepitAttakedSoldirs = true;
     }
