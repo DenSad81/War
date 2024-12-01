@@ -14,15 +14,25 @@ class Program
         List<Soldier> soldiers1 = new List<Soldier>(armyGenerator.Generate());
         List<Soldier> soldiers2 = new List<Soldier>(armyGenerator.Generate());
 
-        Army a1 = new Army(soldiers1, "Orks");
-        Army a2 = new Army(soldiers2, "Gnoms");
+        Army a1 = new Army(soldiers1, "Orks", random);
+        Army a2 = new Army(soldiers2, "Gnoms", random);
 
-        a1.ShowAll();
+        a1.ShowAllSoldiers();
         Console.WriteLine();
         Console.WriteLine();
-        a2.ShowAll();
+        a2.ShowAllSoldiers();
 
         Console.ReadKey();
+
+        Fight fight = new Fight();
+        fight.GoFight(a1, a2);
+        fight.ShowWinner(a1, a2);
+
+        a1.ShowAllSoldiers();
+        Console.WriteLine();
+        Console.WriteLine();
+        a2.ShowAllSoldiers();
+
     }
 }
 
@@ -45,22 +55,13 @@ class Soldier
         CanRepitAttakedSoldirs = false;
     }
 
-    public void ShowStats()
-    {
-        Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage}");
-    }
+    public void ShowStats() => Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage}");
 
     public bool IsAlife() => (Health > 0);
 
-    public void TakeDamage(int damage, bool isAttack)
-    {
-        if (isAttack)
-            Health -= damage;
-        else
-            Health -= (damage - Armor);
-    }
+    public void TakeDamage(Soldier attackedSoldier) => Health -= (attackedSoldier.Damage - Armor);
 
-    public virtual int GiveDamage() => Damage;
+    public virtual Soldier GiveDamage() => Clone(Health, Armor, Damage);
 
     public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(health, armor, damage);
 }
@@ -73,13 +74,10 @@ class Soldier2 : Soldier
         : base(health, armor, damage)
     {
         Type = "T2";
-        // Health = health;
-        // Armor = armor;
-        // Damage = damage;
         _multiplier = 2;
     }
 
-    public override int GiveDamage() => Damage * _multiplier;
+    public override Soldier GiveDamage() => Clone(Health, Armor, Damage * _multiplier);
 
     public override Soldier Clone(int health, int armor, int damage) => new Soldier2(health, armor, damage);
 }
@@ -90,9 +88,6 @@ class Soldier3 : Soldier
        : base(health, armor, damage)
     {
         Type = "T3";
-        //Health = health;
-        //Armor = armor;
-        //Damage = damage;
         QuantityAttacks = 2;
         CanRepitAttakedSoldirs = false;
     }
@@ -106,9 +101,6 @@ class Soldier4 : Soldier
        : base(health, armor, damage)
     {
         Type = "T4";
-        //Health = health;
-        //Armor = armor;
-        //Damage = damage;
         QuantityAttacks = 3;
         CanRepitAttakedSoldirs = true;
     }
@@ -159,62 +151,54 @@ class ArmyGenerator
 
 class Army
 {
-    private List<Soldier> _soldiers;
+    public List<Soldier> Soldiers;
+
+    private Random _random;
 
     public string Name { get; private set; }
 
-    public Army(List<Soldier> soldiers, string name)
+    public Army(List<Soldier> soldiers, string name, Random random)
     {
-        _soldiers = new List<Soldier>(soldiers);
+        Soldiers = new List<Soldier>(soldiers);
         Name = name;
+        _random = random;
     }
 
-    public void ShowAll()
+    public void ShowAllSoldiers()
     {
-        foreach (var soldier in _soldiers)
+        foreach (var soldier in Soldiers)
             soldier.ShowStats();
     }
 
-    public void DeleteDeadBodys()
+    public void DeleteDeadBody()
     {
-        foreach (var soldier in _soldiers)
+        foreach (var soldier in Soldiers)
         {
             if (soldier.IsAlife() == false)
-                _soldiers.Remove(soldier);
+            {
+                Soldiers.Remove(soldier);
+                break;
+            }
         }
     }
 
-    public int GetQuantityOfSoldiers() => _soldiers.Count;
+    public int GetQuantityOfSoldiers() => Soldiers.Count;
 
-    public void TakeDamage(Army enemy, int lenght, bool isAttack)
-    {
-        for (int i = 0; i < lenght; i++)
-            _soldiers[i].TakeDamage(enemy._soldiers[i].GiveDamage(), isAttack);
-    }
+    public Soldier GetRandomSoldier() => Soldiers[_random.Next(0, Soldiers.Count())];
 }
 
 class Fight
 {
     public void GoFight(Army army1, Army army2)
     {
-        bool isAttack = true;
-        bool isProtection = false;
-
-        if (army1.GetQuantityOfSoldiers() >= army2.GetQuantityOfSoldiers())
+        while (army1.GetQuantityOfSoldiers() > 0 & army2.GetQuantityOfSoldiers() > 0)
         {
-            int length = army2.GetQuantityOfSoldiers();
-            army2.TakeDamage(army1, length, isProtection);
-            army1.TakeDamage(army2, length, isAttack);
-        }
-        else
-        {
-            int length = army1.GetQuantityOfSoldiers();
-            army1.TakeDamage(army2, length, isProtection);
-            army2.TakeDamage(army1, length, isAttack);
-        }
+            army2.GetRandomSoldier().TakeDamage(army1.GetRandomSoldier().GiveDamage());
+            army2.DeleteDeadBody();
 
-        army2.DeleteDeadBodys();
-        army1.DeleteDeadBodys();
+            army1.GetRandomSoldier().TakeDamage(army1.GetRandomSoldier().GiveDamage());
+            army1.DeleteDeadBody();
+        }
     }
 
     public void ShowWinner(Army army1, Army army2)
