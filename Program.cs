@@ -12,22 +12,22 @@ class Program
         ArmyGenerator armyGenerator = new ArmyGenerator(random);
         List<Soldier> soldiers1 = new List<Soldier>(armyGenerator.Generate());
         List<Soldier> soldiers2 = new List<Soldier>(armyGenerator.Generate());
-        Army a1 = new Army(soldiers1, "Orks", random);
-        Army a2 = new Army(soldiers2, "Gnoms", random);
-        Fight fight = new Fight();
+        Army orks = new Army(soldiers1, "Orks", random);
+        Army gnoms = new Army(soldiers2, "Gnoms", random);
+        Battle battle = new Battle();
 
-        a1.ShowAllSoldiers();
+        orks.ShowAllSoldiers();
         Console.WriteLine();
-        a2.ShowAllSoldiers();
+        gnoms.ShowAllSoldiers();
 
         Console.WriteLine();
-        fight.GoFight(a1, a2);
-        fight.ShowWinner(a1, a2);
+        battle.Fight(orks, gnoms);
+        battle.ShowWinner(orks, gnoms);
         Console.WriteLine();
 
-        a1.ShowAllSoldiers();
+        orks.ShowAllSoldiers();
         Console.WriteLine();
-        a2.ShowAllSoldiers();
+        gnoms.ShowAllSoldiers();
     }
 }
 
@@ -51,13 +51,17 @@ class Soldier
     public int QuantityAttacks { get; protected set; }
     public string Type { get; protected set; }
 
-    public void ShowStats() => Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage} armor: {Armor}");
+    public void ShowStats() => 
+        Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage} armor: {Armor}");
 
-    public bool IsAlife() => (Health > 0);
+    public bool IsAlife() =>
+        (Health > 0);
 
-    public void TakeDamage(Soldier attackedSoldier) => Health -= (attackedSoldier.Damage - Armor);
+    public void TakeDamage(Soldier attackedSoldier) => 
+        Health -= (attackedSoldier.Damage - Armor);
 
-    public virtual Soldier GiveDamage() => Clone(Health, Armor, Damage);
+    public virtual Soldier GiveDamage() => 
+        Clone(Health, Armor, Damage);
 
     public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(health, armor, damage);
 }
@@ -73,9 +77,11 @@ class Soldier2 : Soldier
         _multiplier = 2;
     }
 
-    public override Soldier GiveDamage() => Clone(Health, Armor, Damage * _multiplier);
+    public override Soldier GiveDamage() => 
+        Clone(Health, Armor, Damage * _multiplier);
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier2(health, armor, damage);
+    public override Soldier Clone(int health, int armor, int damage) => 
+        new Soldier2(health, armor, damage);
 }
 
 class Soldier3 : Soldier
@@ -88,7 +94,8 @@ class Soldier3 : Soldier
         CanRepitAttakedSoldirs = false;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier3(health, armor, damage);
+    public override Soldier Clone(int health, int armor, int damage) => 
+        new Soldier3(health, armor, damage);
 }
 
 class Soldier4 : Soldier
@@ -101,7 +108,8 @@ class Soldier4 : Soldier
         CanRepitAttakedSoldirs = true;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => new Soldier4(health, armor, damage);
+    public override Soldier Clone(int health, int armor, int damage) => 
+        new Soldier4(health, armor, damage);
 }
 
 class ArmyGenerator
@@ -180,29 +188,16 @@ class Army
         }
     }
 
-    public int GetQuantityOfSoldiers() => _soldiers.Count;
+    public int GetQuantityOfSoldiers() => 
+        _soldiers.Count;
 
-    public bool TryGetRandomSoldier(out Soldier soldier)
-    {
-        if (_soldiers.Count() > 0)
-        {
-            soldier = _soldiers[_random.Next(0, _soldiers.Count())];
-            return true;
-        }
-        else
-        {
-            soldier = null;
-            return false;
-        }
-
-    }
-
-    public Soldier GetRandomSoldier() => _soldiers[_random.Next(0, _soldiers.Count())];
+  public Soldier GetRandomSoldier() => 
+        _soldiers[_random.Next(0, _soldiers.Count())];
 }
 
-class Fight
+class Battle
 {
-    public void GoFight(Army army1, Army army2)
+    public void Fight(Army army1, Army army2)
     {
         while (army1.GetQuantityOfSoldiers() > 0 & army2.GetQuantityOfSoldiers() > 0)
         {
