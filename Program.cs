@@ -36,7 +36,8 @@ class Soldier
     protected int Health;
     protected int Armor;
     protected int Damage;
-    protected bool CanRepitAttakedSoldirs;
+
+    public string Type { get; protected set; }
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
     {
@@ -44,24 +45,26 @@ class Soldier
         Health = health;
         Armor = armor;
         Damage = damage;
-        QuantityAttacks = 1;
-        CanRepitAttakedSoldirs = false;
     }
 
-    public int QuantityAttacks { get; protected set; }
-    public string Type { get; protected set; }
-
-    public void ShowStats() => 
+    public void ShowStats() =>
         Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage} armor: {Armor}");
 
     public bool IsAlife() =>
         (Health > 0);
 
-    public void TakeDamage(Soldier attackedSoldier) => 
-        Health -= (attackedSoldier.Damage - Armor);
+    public void TakeDamage(int damage) =>
+        Health -= (damage - Armor);
 
-    public virtual Soldier GiveDamage() => 
-        Clone(Health, Armor, Damage);
+    public virtual bool GiveDamage(Army army)
+    {
+        if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+        return true;
+    }
 
     public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(health, armor, damage);
 }
@@ -77,10 +80,17 @@ class Soldier2 : Soldier
         _multiplier = 2;
     }
 
-    public override Soldier GiveDamage() => 
-        Clone(Health, Armor, Damage * _multiplier);
+    public override bool GiveDamage(Army army)
+    {
+        if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+            return false;
 
-    public override Soldier Clone(int health, int armor, int damage) => 
+        attakedSoldier.TakeDamage(Damage * _multiplier);
+        army.DeleteDeadBody();
+        return true;
+    }
+
+    public override Soldier Clone(int health, int armor, int damage) =>
         new Soldier2(health, armor, damage);
 }
 
@@ -90,11 +100,25 @@ class Soldier3 : Soldier
        : base(health, armor, damage)
     {
         Type = "Type 3";
-        QuantityAttacks = 2;
-        CanRepitAttakedSoldirs = false;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => 
+    public override bool GiveDamage(Army army)
+    {
+        if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+
+        if (army.TryGetRandomSoldier(out attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+        return true;
+    }
+
+    public override Soldier Clone(int health, int armor, int damage) =>
         new Soldier3(health, armor, damage);
 }
 
@@ -104,11 +128,31 @@ class Soldier4 : Soldier
        : base(health, armor, damage)
     {
         Type = "Type 4";
-        QuantityAttacks = 3;
-        CanRepitAttakedSoldirs = true;
     }
 
-    public override Soldier Clone(int health, int armor, int damage) => 
+    public override bool GiveDamage(Army army)
+    {
+        if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+
+        if (army.TryGetRandomSoldier(out attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+
+        if (army.TryGetRandomSoldier(out attakedSoldier) == false)
+            return false;
+
+        attakedSoldier.TakeDamage(Damage);
+        army.DeleteDeadBody();
+        return true;
+    }
+
+    public override Soldier Clone(int health, int armor, int damage) =>
         new Soldier4(health, armor, damage);
 }
 
@@ -152,20 +196,19 @@ class ArmyGenerator
     }
 }
 
-
 class Army
 {
     private List<Soldier> _soldiers;
     private Random _random;
 
+    public string Name { get; private set; }
+
     public Army(List<Soldier> soldiers, string name, Random random)
     {
         _soldiers = new List<Soldier>(soldiers);
-        Name = name;
         _random = random;
+        Name = name;
     }
-
-    public string Name { get; private set; }
 
     public void ShowAllSoldiers()
     {
@@ -188,11 +231,23 @@ class Army
         }
     }
 
-    public int GetQuantityOfSoldiers() => 
+    public int GetQuantityOfSoldiers() =>
         _soldiers.Count;
 
-  public Soldier GetRandomSoldier() => 
-        _soldiers[_random.Next(0, _soldiers.Count())];
+    public bool TryGetRandomSoldier(out Soldier soldier)
+    {
+        if (_soldiers.Count() > 0)
+        {
+            soldier = _soldiers[_random.Next(0, _soldiers.Count())];
+            return true;
+        }
+        else
+        {
+            soldier = null;
+            return false;
+        }
+
+    }
 }
 
 class Battle
@@ -201,28 +256,16 @@ class Battle
     {
         while (army1.GetQuantityOfSoldiers() > 0 & army2.GetQuantityOfSoldiers() > 0)
         {
-            Soldier attackedSoldier = army1.GetRandomSoldier();
-            for (int i = 0; i < attackedSoldier.QuantityAttacks; i++)
-            {
-                army2.GetRandomSoldier().TakeDamage(attackedSoldier.GiveDamage());
-                army2.DeleteDeadBody();
-
-                if (army2.GetQuantityOfSoldiers() == 0)
-                    break;
-            }
+            if (army1.TryGetRandomSoldier(out Soldier attakedSoldierArmy1) == false)
+                break;
+            attakedSoldierArmy1.GiveDamage(army2);
 
             if (army2.GetQuantityOfSoldiers() == 0)
                 break;
 
-            attackedSoldier = army2.GetRandomSoldier();
-            for (int i = 0; i < attackedSoldier.QuantityAttacks; i++)
-            {
-                army1.GetRandomSoldier().TakeDamage(attackedSoldier.GiveDamage());
-                army1.DeleteDeadBody();
-
-                if (army1.GetQuantityOfSoldiers() == 0)
-                    break;
-            }
+            if (army2.TryGetRandomSoldier(out Soldier attakedSoldierArmy2) == false)
+                break;
+            attakedSoldierArmy2.GiveDamage(army1);
         }
     }
 
