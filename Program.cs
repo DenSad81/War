@@ -9,8 +9,8 @@ class Program
     static void Main(string[] args)
     {
         ArmyGenerator armyGenerator = new ArmyGenerator();
-        List<Soldier> soldiers1 = new List<Soldier>(armyGenerator.Generate());
-        List<Soldier> soldiers2 = new List<Soldier>(armyGenerator.Generate());
+        List<BaseSoldier> soldiers1 = new List<BaseSoldier>(armyGenerator.Generate());
+        List<BaseSoldier> soldiers2 = new List<BaseSoldier>(armyGenerator.Generate());
         Army orks = new Army(soldiers1, "Orks");
         Army gnoms = new Army(soldiers2, "Gnoms");
         Battle battle = new Battle();
@@ -40,24 +40,23 @@ public static class Utils
     }
 }
 
-public class Soldier
+public class BaseSoldier
 {
     protected int Armor;
     protected int Damage;
 
     private int Health;
 
-    public string Type { get; protected set; }
-
-    public bool IsAlive => Health > 0;   
-
-    public Soldier(int health = 0, int armor = 0, int damage = 0)
+    public BaseSoldier(int health = 0, int armor = 0, int damage = 0)
     {
         Type = "Type 1";
         Health = health;
         Armor = armor;
         Damage = damage;
     }
+
+    public string Type { get; protected set; }
+    public bool IsAlive => Health > 0;
 
     public void ShowStats() =>
         Console.WriteLine($"Type: {Type} health: {Health} damage: {Damage} armor: {Armor}");
@@ -69,7 +68,7 @@ public class Soldier
 
     protected bool TryAttack(Army army, int multiplier = 1)
     {
-        if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+        if (army.TryGetRandomSoldier(out BaseSoldier attakedSoldier) == false)
             return false;
 
         attakedSoldier.TakeDamage(Damage * multiplier);
@@ -77,10 +76,10 @@ public class Soldier
         return true;
     }
 
-    public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(health, armor, damage);
+    public virtual BaseSoldier Clone(int health, int armor, int damage) => new BaseSoldier(health, armor, damage);
 }
 
-public class Soldier2 : Soldier
+public class Soldier2 : BaseSoldier
 {
     private int _multiplier;
 
@@ -93,11 +92,11 @@ public class Soldier2 : Soldier
 
     public override void GiveDamage(Army army) => TryAttack(army, _multiplier);
 
-    public override Soldier Clone(int health, int armor, int damage) =>
+    public override BaseSoldier Clone(int health, int armor, int damage) =>
         new Soldier2(health, armor, damage);
 }
 
-public class Soldier3 : Soldier
+public class Soldier3 : BaseSoldier
 {
     public Soldier3(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
@@ -113,11 +112,11 @@ public class Soldier3 : Soldier
         TryAttack(army);
     }
 
-    public override Soldier Clone(int health, int armor, int damage) =>
+    public override BaseSoldier Clone(int health, int armor, int damage) =>
         new Soldier3(health, armor, damage);
 }
 
-public class Soldier4 : Soldier
+public class Soldier4 : BaseSoldier
 {
     public Soldier4(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
@@ -136,13 +135,13 @@ public class Soldier4 : Soldier
         TryAttack(army);
     }
 
-    public override Soldier Clone(int health, int armor, int damage) =>
+    public override BaseSoldier Clone(int health, int armor, int damage) =>
         new Soldier4(health, armor, damage);
 }
 
 public class ArmyGenerator
 {
-    private List<Soldier> _soldiersType;
+    private List<BaseSoldier> _soldiersType;
     private int _minSoldiers = 10;
     private int _maxSoldiers = 15;
     private int _minHealth = 100;
@@ -154,15 +153,15 @@ public class ArmyGenerator
 
     public ArmyGenerator()
     {
-        _soldiersType = new List<Soldier>() { new Soldier(),
+        _soldiersType = new List<BaseSoldier>() { new BaseSoldier(),
                                               new Soldier2(),
                                               new Soldier3(),
                                               new Soldier4() };
     }
 
-    public List<Soldier> Generate()
+    public List<BaseSoldier> Generate()
     {
-        List<Soldier> soldiers = new List<Soldier>();
+        List<BaseSoldier> soldiers = new List<BaseSoldier>();
 
         for (int i = 0; i < Utils.GenerateRandomNumber(_minSoldiers, _maxSoldiers); i++)
         {
@@ -180,17 +179,16 @@ public class ArmyGenerator
 
 public class Army
 {
-    private List<Soldier> _soldiers;
+    private List<BaseSoldier> _soldiers;
 
-    public string Name { get; }
-
-    public int QuantitySoldiers => _soldiers.Count;
-
-    public Army(List<Soldier> soldiers, string name)
+    public Army(List<BaseSoldier> soldiers, string name)
     {
-        _soldiers = new List<Soldier>(soldiers);
+        _soldiers = new List<BaseSoldier>(soldiers);
         Name = name;
     }
+
+    public string Name { get; }
+    public int QuantitySoldiers => _soldiers.Count;
 
     public void ShowAllSoldiers()
     {
@@ -213,7 +211,7 @@ public class Army
         }
     }
 
-    public bool TryGetRandomSoldier(out Soldier soldier)
+    public bool TryGetRandomSoldier(out BaseSoldier soldier)
     {
         if (_soldiers.Count() > 0)
         {
@@ -230,7 +228,7 @@ public class Battle
 {
     private bool TryAttack(Army army1, Army army2)
     {
-        if (army1.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
+        if (army1.TryGetRandomSoldier(out BaseSoldier attakedSoldier) == false)
             return false;
 
         attakedSoldier.GiveDamage(army2);
@@ -239,13 +237,15 @@ public class Battle
 
     public void Fight(Army army1, Army army2)
     {
-        while (army1.QuantitySoldiers > 0 & army2.QuantitySoldiers > 0)
+        bool isRun = true;
+
+        while (army1.QuantitySoldiers > 0 & army2.QuantitySoldiers > 0 & isRun)
         {
             if (TryAttack(army1, army2) == false)
-                break;
+                isRun = false;
 
             if (TryAttack(army2, army1) == false)
-                break;
+                isRun = false;
         }
     }
 
