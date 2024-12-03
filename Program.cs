@@ -42,13 +42,14 @@ public static class Utils
 
 public class Soldier
 {
-    protected int Health;
     protected int Armor;
     protected int Damage;
 
+    private int Health;
+
     public string Type { get; protected set; }
-    //public bool IsAlive { get { return (Health > 0); } }
-    public bool IsAlive => Health > 0;
+
+    public bool IsAlive => Health > 0;   
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
     {
@@ -64,15 +65,9 @@ public class Soldier
     public void TakeDamage(int damage) =>
         Health -= (damage - Armor);
 
-    public virtual bool GiveDamage(Army army)
-    {
-        if (Attack(army) == false)
-            return false;
+    public virtual void GiveDamage(Army army) => TryAttack(army);
 
-        return true;
-    }
-
-    protected bool Attack(Army army, int multiplier = 1)
+    protected bool TryAttack(Army army, int multiplier = 1)
     {
         if (army.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
             return false;
@@ -96,13 +91,7 @@ public class Soldier2 : Soldier
         _multiplier = 2;
     }
 
-    public override bool GiveDamage(Army army)
-    {
-        if (Attack(army, _multiplier) == false)
-            return false;
-
-        return true;
-    }
+    public override void GiveDamage(Army army) => TryAttack(army, _multiplier);
 
     public override Soldier Clone(int health, int armor, int damage) =>
         new Soldier2(health, armor, damage);
@@ -116,15 +105,12 @@ public class Soldier3 : Soldier
         Type = "Type 3";
     }
 
-    public override bool GiveDamage(Army army)
+    public override void GiveDamage(Army army)
     {
-        if (Attack(army) == false)
-            return false;
+        if (TryAttack(army) == false)
+            return;
 
-        if (Attack(army) == false)
-            return false;
-
-        return true;
+        TryAttack(army);
     }
 
     public override Soldier Clone(int health, int armor, int damage) =>
@@ -139,18 +125,15 @@ public class Soldier4 : Soldier
         Type = "Type 4";
     }
 
-    public override bool GiveDamage(Army army)
+    public override void GiveDamage(Army army)
     {
-        if (Attack(army) == false)
-            return false;
+        if (TryAttack(army) == false)
+            return;
 
-        if (Attack(army) == false)
-            return false;
+        if (TryAttack(army) == false)
+            return;
 
-        if (Attack(army) == false)
-            return false;
-
-        return true;
+        TryAttack(army);
     }
 
     public override Soldier Clone(int health, int armor, int damage) =>
@@ -199,9 +182,9 @@ public class Army
 {
     private List<Soldier> _soldiers;
 
-    public string Name { get; /*private set;*/ }
-    //public int QuantitySoldiers { get { return _soldiers.Count; } }
-    public int QuantitySoldiers => _soldiers.Count; 
+    public string Name { get; }
+
+    public int QuantitySoldiers => _soldiers.Count;
 
     public Army(List<Soldier> soldiers, string name)
     {
@@ -237,17 +220,15 @@ public class Army
             soldier = _soldiers[Utils.GenerateRandomNumber(0, _soldiers.Count())];
             return true;
         }
-        else
-        {
-            soldier = null;
-            return false;
-        }
+
+        soldier = null;
+        return false;
     }
 }
 
 public class Battle
 {
-    private bool Attack(Army army1, Army army2)
+    private bool TryAttack(Army army1, Army army2)
     {
         if (army1.TryGetRandomSoldier(out Soldier attakedSoldier) == false)
             return false;
@@ -260,10 +241,10 @@ public class Battle
     {
         while (army1.QuantitySoldiers > 0 & army2.QuantitySoldiers > 0)
         {
-            if (Attack(army1, army2) == false)
+            if (TryAttack(army1, army2) == false)
                 break;
 
-            if (Attack(army2, army1) == false)
+            if (TryAttack(army2, army1) == false)
                 break;
         }
     }
