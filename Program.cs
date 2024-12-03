@@ -30,7 +30,7 @@ class Program
     }
 }
 
-static class Utils
+public static class Utils
 {
     private static Random s_random = new Random();
 
@@ -40,15 +40,15 @@ static class Utils
     }
 }
 
-
-class Soldier
+public class Soldier
 {
     protected int Health;
     protected int Armor;
     protected int Damage;
 
     public string Type { get; protected set; }
-    public bool IsAlife { get { return (Health > 0); } }
+    //public bool IsAlive { get { return (Health > 0); } }
+    public bool IsAlive => Health > 0;
 
     public Soldier(int health = 0, int armor = 0, int damage = 0)
     {
@@ -85,7 +85,7 @@ class Soldier
     public virtual Soldier Clone(int health, int armor, int damage) => new Soldier(health, armor, damage);
 }
 
-class Soldier2 : Soldier
+public class Soldier2 : Soldier
 {
     private int _multiplier;
 
@@ -108,7 +108,7 @@ class Soldier2 : Soldier
         new Soldier2(health, armor, damage);
 }
 
-class Soldier3 : Soldier
+public class Soldier3 : Soldier
 {
     public Soldier3(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
@@ -131,7 +131,7 @@ class Soldier3 : Soldier
         new Soldier3(health, armor, damage);
 }
 
-class Soldier4 : Soldier
+public class Soldier4 : Soldier
 {
     public Soldier4(int health = 0, int armor = 0, int damage = 0)
        : base(health, armor, damage)
@@ -157,7 +157,7 @@ class Soldier4 : Soldier
         new Soldier4(health, armor, damage);
 }
 
-class ArmyGenerator
+public class ArmyGenerator
 {
     private List<Soldier> _soldiersType;
     private int _minSoldiers = 10;
@@ -195,12 +195,13 @@ class ArmyGenerator
     }
 }
 
-class Army
+public class Army
 {
     private List<Soldier> _soldiers;
 
-    public string Name { get; private set; }
-    public int QuantitySoldiers { get { return _soldiers.Count; } }
+    public string Name { get; /*private set;*/ }
+    //public int QuantitySoldiers { get { return _soldiers.Count; } }
+    public int QuantitySoldiers => _soldiers.Count; 
 
     public Army(List<Soldier> soldiers, string name)
     {
@@ -221,7 +222,7 @@ class Army
     {
         foreach (var soldier in _soldiers)
         {
-            if (soldier.IsAlife == false)
+            if (soldier.IsAlive == false)
             {
                 _soldiers.Remove(soldier);
                 break;
@@ -244,7 +245,7 @@ class Army
     }
 }
 
-class Battle
+public class Battle
 {
     private bool Attack(Army army1, Army army2)
     {
